@@ -1,31 +1,22 @@
-clc;clear;close all;
+% clc;clear;close all;
+
+function Ex_2_b(coarse_solver, fine_solver, TN, J, ep)
 
 tic;
 L=pi;       % inteval x \in [0, L];
-M0 = 1000;    % count of sub-intervals of space
-r = 1;        % order on space
-T = 10;      % t \in [0, T];
+M0=1000;    % count of sub-intervals of space
+r=1;        % order on space
+T = 1;      % t \in [0, T];
 
-% TN is the number of coarse steps
-% here the target accuracy is 1e-6
-TN = 150; J = 20; % three-stage Lobatto
-% TN = 50; J = 20; % three-stage Radau
-% TN = 40; J = 20; % four-stage Lobatto
+% TN = 100; J = 20;  % fix tn = 2000, for ep = 1
+% TN = 20; J = 100; % fix tn = 2000, for ep = 1
+% TN = 1000; J = 10; % fix tn = 10000, for ep = sqrt(0.02)
+% TN = 500; J = 20; % fix tn = 10000, for ep = sqrt(0.02)
 
 iter_max = min([TN, 10]);
 
-ep = sqrt(1);
-
-% coarse_solver = @ I_Euler_Solver_AC;
-coarse_solver = @ Lql_C2_Solver_AC;
-% coarse_solver = @ Lql_C3_Solver_AC;
-% coarse_solver = @ Lql_CR_Solver_AC;
-% coarse_solver = @ Lql_C4_Solver_AC;
-
-fine_solver = @ Lobatto_IIIC_2_Solver_AC;
-% fine_solver = @ Lobatto_IIIC_3_Solver_AC;
-% fine_solver = @ Radau_IIA_3_Solver_AC;
-% fine_solver = @ Lobatto_IIIC_4_Solver_AC;
+% ep = sqrt(0.02);
+% ep = sqrt(1);
 
 
 f = @(u) (u-u.^3)/(ep*ep);
@@ -35,7 +26,6 @@ F = @(u) (u.^2-1).^2/(4*ep*ep);
 % F = @(u) 0*u;
 
 al = 1;
-
 get_u0 = @(x) (  (x<=pi/2).*1 + (x>pi/2).*(-1));
 
 
@@ -65,22 +55,19 @@ u_para_new(:,1) = u0;
 for k = 1 : TN
     fprintf("sequential solution: k=%d\t%f\n", k, toc)
     u_seq(:,k+1) = fine_solver(u_seq(:,k), Mass, Stiff, f, f_prime, TAU, J, F, al);
-    % initialization
     [u_para(:, k+1),time_total(1,k)] = coarse_solver(u_para(:, k), Mass, Stiff, f, f_prime, TAU, 1, F, al, L_c,U_c);
     % u_para(:, k+1) = u0;
 end
 
-load('parareal efficiency/J_20_Exact_Solver.mat');
+% load('parareal efficiency/J_20_Exact_Solver.mat');
 
-u_err_para_seq = u_para(:,2:end) - u_exact_end;
+u_err_para_seq = u_para(:,2:end) - u_seq(:,2:end);
 this_err = zeros(size(1:TN));
 for k2 = 1 : TN
     this_err(k2) = sqrt(u_err_para_seq(:,k2)' * Mass * u_err_para_seq(:,k2));
 end
 
 err(1) = max(this_err);
-
-%% parareal
 
 time_temp = zeros(1,TN);
 for m = 1:iter_max
@@ -98,7 +85,7 @@ for m = 1:iter_max
     end
     u_para = u_para_new;
     
-    u_err_para_seq = u_para(:,2:end) - u_exact_end;
+    u_err_para_seq = u_para(:,2:end) - u_seq(:,2:end);
     this_err = zeros(size(1:TN));
     for k2 = 1 : TN
         this_err(k2) = sqrt(u_err_para_seq(:,k2)' * Mass * u_err_para_seq(:,k2));
@@ -125,32 +112,14 @@ for i=1:1:iter_max-1
     alpha1(i)=exp((log(err(i+1))-log(err(i))));
 end
 
-disp(alpha1);
+% Save the plot
+coarse_solver_name = func2str(coarse_solver);
+fine_solver_name = func2str(fine_solver);
+folder_name = ['J', num2str(J)];
 
-%% Parareal efficiency
-Exact_time = 2168; % three-stage Lobatto
-% Exact_time = 597; % three-stage Radau
-% Exact_time = 888; % four-stage Lobatto
+saveas(gcf,['Ex_2_b_data/figure plot/',folder_name,'/J_',num2str(J),'_',coarse_solver_name,'_',fine_solver_name,'.png']);
+save(['Ex_2_b_data/figure data/',folder_name,'/J_',num2str(J),'_',coarse_solver_name,'_',fine_solver_name,'.mat'],'err');
 
-% time_fine = sum(max(time_total(2:end,:), [], 2));
 
-% speed_up_1 = (Exact_time)/(m * sum(time_total(1,:)) + time_fine);
-% 
-% eff_1 = 100*speed_up_1/(TN);
-% 
-% speed_up_2 = (Exact_time)/(time_fine);
-% eff_2 = 100*speed_up_2/(TN);
 
-% save('parareal efficiency 2/2-stage Lobatto/iteration.mat','m');
-% save('parareal efficiency 2/2-stage Lobatto/speed up with cost.mat','speed_up_1');
-% save('parareal efficiency 2/2-stage Lobatto/efficiency with cost.mat','eff_1');
-% save('parareal efficiency 2/2-stage Lobatto/speed up without cost.mat','speed_up_2');
-% save('parareal efficiency 2/2-stage Lobatto/efficiency without cost.mat','eff_2');
-
-% save('parareal efficiency 2/2 BE/iteration.mat','m');
-% save('parareal efficiency 2/2 BE/speed up with cost.mat','speed_up_1');
-% save('parareal efficiency 2/2 BE/efficiency with cost.mat','eff_1');
-% 
-% save('parareal efficiency 2/2 BE/speed up without cost.mat','speed_up_2');
-% save('parareal efficiency 2/2 BE/efficiency without cost.mat','eff_2');
-
+end

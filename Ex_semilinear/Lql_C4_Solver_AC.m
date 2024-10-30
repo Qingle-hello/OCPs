@@ -20,7 +20,7 @@ function [uend, time1, cut, energy] = Lql_C4_Solver_AC(u0, Mass, Stiff, f, f_pri
         L = tau*Lap_m;
         I = diag(ones(size(u0)));   
         I_Euler_op = (0.37898*L^2 + 0.78909*L + I);  
-        [L_IE,U_IE] = lu(I_Euler_op);
+        A = inv(I_Euler_op);
     % elseif nargin == 11
     %     L_IE = L_fast; U_IE = U_fast;
     % end
@@ -30,11 +30,13 @@ function [uend, time1, cut, energy] = Lql_C4_Solver_AC(u0, Mass, Stiff, f, f_pri
         f1 = f(u(:,i));
         
         r = (0.37422*L + I) * f1;
-        b = (I-0.21091*L + 0.00476*L*L)* u(:,i) + tau * r;
+        b = (0.98744*I - 0.22082*L) * u(:,i) + tau * r;
     
-        u(:,i+1) = (U_IE\(L_IE\(b)));    
+        u(:,i+1) = A * b +    0.01256 * u(:,i);
         
-   
+        cut(i) = max(max(abs(min(max(u(:,i+1),-al),al) - u(:,i+1)))); 
+        u(:,i+1) = min(max(u(:,i+1),-al),al);  
+        energy(i+1) = get_energy(u(:,i+1));    
     
     end    
     

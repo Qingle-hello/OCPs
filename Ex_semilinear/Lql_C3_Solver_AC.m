@@ -18,7 +18,7 @@ function [uend, time1, cut, energy] = Lql_C3_Solver_AC(u0, Mass, Stiff, f, f_pri
         L = tau*Lap_m;
         I = diag(ones(size(u0)));   
         I_Euler_op = I+0.78986*L+0.38283*L*L;   
-        [L_IE,U_IE] = lu(I_Euler_op);
+        A = inv(I_Euler_op);
     % elseif nargin == 11
     %    L_IE = L_fast; U_IE = U_fast;
     % end
@@ -29,8 +29,8 @@ function [uend, time1, cut, energy] = Lql_C3_Solver_AC(u0, Mass, Stiff, f, f_pri
         
         f1 = f(u(:,i));
         r = (0.37797*L+I) * f1;
-        r = (I-0.21014*L + 0.00486*L*L )*u(:,i) + tau * r;
-        u(:,i+1) = (U_IE\(L_IE\r));    
+        r = (0.98730*I - 0.22017*L)*u(:,i) + tau * r;
+        u(:,i+1) = A * r + 0.0127 * u(:,i);
         
         cut(i) = max(max(abs(min(max(u(:,i+1),-al),al) - u(:,i+1)))); 
         u(:,i+1) = min(max(u(:,i+1),-al),al);  

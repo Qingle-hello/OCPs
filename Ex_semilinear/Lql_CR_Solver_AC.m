@@ -17,7 +17,7 @@ function [uend, time1, cut, energy] = Lql_CR_Solver_AC(u0, Mass, Stiff, f, f_pri
         L = tau*Lap_m;
         I = diag(ones(size(u0)));   
         I_Euler_op = (0.37922*L^2 + 0.78875*L + I);      
-        [L_IE,U_IE] = lu(I_Euler_op);
+        A = inv(I_Euler_op);
     %elseif nargin == 11
     %    L_IE = L_fast; U_IE = U_fast;
     %end
@@ -28,9 +28,10 @@ function [uend, time1, cut, energy] = Lql_CR_Solver_AC(u0, Mass, Stiff, f, f_pri
         
         f1 = f(u(:,i));
         
-        r = (0.37443*L + I) * f1;
-        b = (I - 0.21125*L + 0.00479*L^2)* u(:,i) + tau * r;
-        u(:,i+1) = (U_IE\(L_IE\(b)));   
+        % r = (0.37443*L + I) * f1;
+        r = (0.32*L + I) * f1;
+        b = (0.98737*I - 0.22121*L) * u(:,i) + tau * r;
+        u(:,i+1) = A * b + 0.01263*u(:,i);
         
         cut(i) = max(max(abs(min(max(u(:,i+1),-al),al) - u(:,i+1)))); 
         u(:,i+1) = min(max(u(:,i+1),-al),al);  
