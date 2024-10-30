@@ -12,8 +12,8 @@ I = speye(NoF);
 I_Euler_op = (I+L);    
 % [L_IE,U_IE] = lu(I_Euler_op);
 A = inv(I_Euler_op);
-tic;
 
+tic;
 for i=1:t_count
     fn = f(t_start + i * tau, x);
     unext = A*(ulast + tau * fn );    
