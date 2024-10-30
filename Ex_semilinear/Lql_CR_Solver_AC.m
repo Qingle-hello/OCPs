@@ -10,17 +10,14 @@ function [uend, time1, cut, energy] = Lql_CR_Solver_AC(u0, Mass, Stiff, f, f_pri
     
     energy(1) = get_energy(u0);
     u(:,1) = u0;
-    
-    %if nargin == 9
+
         Lap_m = Mass \ Stiff;
     
         L = tau*Lap_m;
         I = diag(ones(size(u0)));   
         I_Euler_op = (0.37922*L^2 + 0.78875*L + I);      
         A = inv(I_Euler_op);
-    %elseif nargin == 11
-    %    L_IE = L_fast; U_IE = U_fast;
-    %end
+
     
     t1 = tic;
 
