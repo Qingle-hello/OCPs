@@ -7,12 +7,12 @@ function unew = Lql_C4_Solver_B(u, A, dx,dt)
     f1 = computeF(u, dx);
     
     I_Euler_op = (0.37898*A^2 + 0.78909*A + I);  
-    [L_IE,U_IE] = lu(I_Euler_op);
+    B = inv(I_Euler_op);
 
     
     r = (0.37422*A + I) * f1;
-    b = (I-0.21091*A + 0.00474*A^2)* u + dt * r;
+    b = (0.98744*I - 0.22082*A)* u + dt * r;
 
-    unew = (U_IE\(L_IE\(b)));    
+    unew = B*b + 0.01256 * u;
     
 end

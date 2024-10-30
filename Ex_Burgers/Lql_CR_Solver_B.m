@@ -9,11 +9,12 @@ function unew = Lql_CR_Solver_B(u, A, dx,dt)
     f1 = computeF(u, dx);
     
     I_Euler_op = (0.37922*A^2 + 0.78875*A + I);      
-    [L_IE,U_IE] = lu(I_Euler_op);
+
+    B = inv(I_Euler_op);
     
     r = (0.37443*A + I) * f1;
-    b = (I - 0.21125*A + 0.00479*A^2)* u + dt * r;
-    unew = (U_IE\(L_IE\(b)));   
+    b = (0.98737*I - 0.22121*A)* u + dt * r;
+    unew = B * b + 0.01263*u;
 
   
 end
