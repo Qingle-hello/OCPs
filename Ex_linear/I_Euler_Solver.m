@@ -10,12 +10,13 @@ Lap_m = Mass \ Stiff;
 L = tau*Lap_m;
 I = speye(NoF);
 I_Euler_op = (I+L);    
-[L_IE,U_IE] = lu(I_Euler_op);
+% [L_IE,U_IE] = lu(I_Euler_op);
+A = inv(I_Euler_op);
 tic;
 
 for i=1:t_count
     fn = f(t_start + i * tau, x);
-    unext = (U_IE\(L_IE\(ulast + tau * fn )));    
+    unext = A*(ulast + tau * fn );    
         
     ulast = unext;
 end 

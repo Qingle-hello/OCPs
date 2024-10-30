@@ -24,7 +24,7 @@ function Ex_1_a(coarse_solver, fine_solver, J)
 
     % f = @(t, x) 50*sin(2*pi*(x+t));
     % f = @(t, x) cos(t) .* sin(x);
-    f = @(t, x) 0*x;
+    f = @(t, x) 0.*x;
 
     get_u0 = @(x) ((x.^10) .* ( x-pi).^10)./((pi/2).^10) ;
     % get_u0 = @(x) (  (x<=pi/2).*1 + (x>pi/2).*(-1)  );
@@ -39,12 +39,10 @@ function Ex_1_a(coarse_solver, fine_solver, J)
     u0 = get_u0(x0);
     time = zeros(2, TN);
     total_time_all = zeros(iter_max, TN);
-    u_exact_seq = zeros(M0-1,TN+1);
-    u_exact_seq(:,1) = u0;
-    for i=1:TN
-        [u_exact_seq(:,i+1), time_fine] = fine_solver(u_exact_seq(:,i), tau, 0, J, Mass, Stiff, f, x0);  
-    end
-    u_exact_end = u_exact_seq(:,end);
+
+    [u_seq_end, time_fine] = fine_solver(u0, tau, 0, tn, Mass, Stiff, f, x0);  
+
+    u_exact_end = u_seq_end;
     % save('parareal efficiency/J_100_Exact_Solver.mat','u_exact_end');
     % load('parareal efficiency/J_100_Exact_Solver.mat');
 
@@ -84,8 +82,6 @@ function Ex_1_a(coarse_solver, fine_solver, J)
                 + u_temp(:,k+1);
         end
         u_para = u_para_new;
-        
-        err_all = u_para - u_exact_seq;
 
         u_err_para_seq = u_para(:,end) - u_exact_end;
         err(m+1) = sqrt(u_err_para_seq' * Mass * u_err_para_seq);
@@ -128,8 +124,8 @@ function Ex_1_a(coarse_solver, fine_solver, J)
     fine_solver_name = func2str(fine_solver);
     folder_name = ['J', num2str(J)];
 
-    save(['Ex_1_a_data/figure data/',folder_name,'/J_',num2str(J),'_',coarse_solver_name,'_',fine_solver_name,'.mat'],'err');
     saveas(gcf,['Ex_1_a_data/figure plot/',folder_name,'/J_',num2str(J),'_',coarse_solver_name,'_',fine_solver_name,'.png']);
-    
+    save(['Ex_1_a_data/figure data/',folder_name,'/J_',num2str(J),'_',coarse_solver_name,'_',fine_solver_name,'.mat'],'err');
+
     display(err);
 end

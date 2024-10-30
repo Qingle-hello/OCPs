@@ -11,14 +11,15 @@ L = tau*Lap_m;
 I = speye(NoF);
 D=L*L;
 Lb3C3_op = I+0.78986*L+0.38283*D;   
-[L_Lb3C3,U_Lb3C3] = lu(Lb3C3_op);
+% [L_Lb3C3,U_Lb3C3] = lu(Lb3C3_op);
+A = inv(Lb3C3_op);
 
 tic;
 for i=1:t_count
     f2 = f(t_start + i * tau, x);
     r = (0.37797*L+I) * f2;
-    r = (I-0.21014*L+0.00486*D)*ulast + tau * r;
-    unext = (U_Lb3C3\(L_Lb3C3\r));    
+    r = (0.98730*I - 0.22017*L)*ulast + tau * r;
+    unext = A * r + 0.0127 * ulast;
 
     ulast = unext;
 end    

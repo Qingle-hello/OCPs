@@ -1,7 +1,7 @@
 % Example 4.1, problem data (b):
 % T = 1,u0 = \chi_{(0,\pi/2)}(x), f = cos(t)sin(x);
 
-clc;clear;close all;
+function Ex_1_a(coarse_solver, fine_solver, J)
 
 L = pi;      % inteval x \in [0, L];
 M0 = 1000;   % count of sub-intervals of space
@@ -10,21 +10,9 @@ r = 1;         % order on space
 T = 1;     % t \in [0, T];
 tn = 2000;  % count of sub-intervals of time
              
-J = 20;       % mesh ratio
-% J = 100;
 
 iter_max = 10;
 
-% coarse_solver = @ I_Euler_Solver;
-coarse_solver = @ Lql_CR_Solver;
-% coarse_solver = @ Lql_C2_Solver;
-% coarse_solver = @ Lql_C3_Solver;
-% coarse_solver = @ Lql_C4_Solver;
-
-fine_solver = @ Radau_IIA_3_Solver;
-% fine_solver = @ Lobatto_IIIC_2_Solver;
-% fine_solver = @ Lobatto_IIIC_3_Solver;
-% fine_solver = @ Lobatto_IIIC_4_Solver;
 
 % f = @(t, x) 50*sin(2*pi*(x+t));
 f = @(t, x) cos(t) .* sin(x);
@@ -127,3 +115,13 @@ ylabel('Error (log scale)');
 legend('Location', 'best');
 title('LCP');
 
+% Save the plot
+coarse_solver_name = func2str(coarse_solver);
+fine_solver_name = func2str(fine_solver);
+folder_name = ['J', num2str(J)];
+
+saveas(gcf,['Ex_1_b_data/figure plot/',folder_name,'/J_',num2str(J),'_',coarse_solver_name,'_',fine_solver_name,'.png']);
+save(['Ex_1_b_data/figure data/',folder_name,'/J_',num2str(J),'_',coarse_solver_name,'_',fine_solver_name,'.mat'],'err');
+display(err);
+
+end
